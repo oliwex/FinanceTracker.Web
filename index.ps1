@@ -13,18 +13,21 @@ Start-PodeServer {
     
     Use-PodeWebTemplates -Title 'Finance Tracker' -Theme Light
 
-    Add-PodeWebPage -Name 'Main' -Icon 'Settings' -ScriptBlock {
+    Add-PodeWebPage -Name 'Sprawozdanie finansowe' -ScriptBlock {
         New-PodeWebGrid -Cells @(
             New-PodeWebCell -Content @(
                 New-PodeWebTable -Name "GoldTable" -ScriptBlock {
                     Get-MetalFromFile -FilePath "$PSScriptRoot\Metal\metal.txt"
                 }
+                New-PodeWebText -Value "Tu będzie wykres"
+                New-PodeWebButton -Name "Więcej" -Url http://localhost:5000/groups/Fortune/pages/Gold
             )
             New-PodeWebCell -Content @(
-                New-PodeWebTable -Name 'Gold' -ScriptBlock {
+                New-PodeWebTable -Name 'MoneyTable' -ScriptBlock {
                     Get-MoneyFromFile -FilePath "$PSScriptRoot\Cash\money.txt"
                 }
-
+                New-PodeWebText -Value "Tu będzie wykres"
+                New-PodeWebButton -Name "Więcej" -Url http://localhost:5000/groups/Fortune/pages/Cash
             )
         )
     }
