@@ -1,0 +1,3 @@
+Element:Metal
+Gold
+18:bar
