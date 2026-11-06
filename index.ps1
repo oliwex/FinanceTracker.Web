@@ -1,52 +1,73 @@
 Import-Module Pode.Web
 
-#region Pages
-
-#endregion Pages
-
 Start-PodeServer {
     
     Add-PodeEndpoint -Address localhost -Port 5000 -Protocol Http -Name Index
     
-    Use-PodeWebTemplates -Title 'Finance Tracker' -Theme Terminal
+    Use-PodeWebTemplates -Title 'Finance Tracker' -Theme Light
 
-    Add-PodeWebPage -Name "Main" -ScriptBlock {
-        New-PodeWebCard -Content @(
-            New-PodeWebTable -Name 'Services' -ScriptBlock {
-                foreach ($svc in (Get-Service)) {
-                    [ordered]@{
-                        Name   = $svc.Name
-                        Status = "$($svc.Status)"
+    Add-PodeWebPage -Name 'Main' -Icon 'Settings' -ScriptBlock {
+        New-PodeWebGrid -Cells @(
+            New-PodeWebCell -Content @(
+    
+                New-PodeWebTable -DisplayName "Tabela złota" -ScriptBlock {
+                    foreach ($svc in (Get-Service | Select-Object Name, Status -First 5 ))
+                    {
+                        [ordered]@{
+                            Name   = $svc.Name
+                            Status = "$($svc.Status)"
+                        }
                     }
+
                 }
-            }
+
+                New-PodeWebChart -Name 'Example Chart1' -Type Line -ScriptBlock {
+                    return (1..10 | ForEach-Object {
+                            @{
+                                Key    = $_ # x-axis value
+                                Values = @(
+                                    @{
+                                        Key   = 'Group1'
+                                        Value = (Get-Random -Maximum 10) # y-axis value
+                                    }
+                                )
+                            }
+                        })
+                }
+            )
+            New-PodeWebCell -Content @(
+                New-PodeWebCard -Content @(
+                    New-PodeWebTable -Name 'Gold' -ScriptBlock {
+                        foreach ($svc in (Get-Service | Select-Object Name, Status -First 5 ))
+                        {
+                            [ordered]@{
+                                Name   = $svc.Name
+                                Status = "$($svc.Status)"
+                            }
+                        }
+                    }
+                    New-PodeWebChart -Name 'Example Chart' -Type Line -ScriptBlock {
+                        return (1..10 | ForEach-Object {
+                                @{
+                                    Key    = $_ # x-axis value
+                                    Values = @(
+                                        @{
+                                            Key   = 'Group1'
+                                            Value = (Get-Random -Maximum 10) # y-axis value
+                                        }
+                                    )
+                                }
+                            })
+                    }
+                )
+            )
+     
+
         )
     }
+    
+    Use-PodeWebPages -Path "$PSScriptRoot\Metal\Metal.ps1"
+    Use-PodeWebPages -Path "$PSScriptRoot\Cash\Cash.ps1"
 
-    Add-PodeWebPage -Name "Cash" -Icon "mdi-cash" -Group "Fortune"  -ScriptBlock {
-        New-PodeWebCard -Content @(
-            New-PodeWebTable -Name 'Services' -ScriptBlock {
-                foreach ($svc in (Get-Service)) {
-                    [ordered]@{
-                        Name   = $svc.Name
-                        Status = "$($svc.Status)"
-                    }
-                }
-            }
-        )
-    }
-
-
-    Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
-        New-PodeWebCard -Content @(
-            New-PodeWebTable -Name 'Services' -ScriptBlock {
-                foreach ($svc in (Get-Service)) {
-                    [ordered]@{
-                        Name   = $svc.Name
-                        Status = "$($svc.Status)"
-                    }
-                }
-            }
-        )
-    }
+    
 }
