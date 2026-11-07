@@ -17,7 +17,29 @@ Start-PodeServer {
         New-PodeWebGrid -Cells @(
             New-PodeWebCell -Content @(
                 New-PodeWebTable -Name "GoldTable" -ScriptBlock {
-                    Get-MetalFromFile -FilePath "$PSScriptRoot\Metal\metal.txt"
+
+                    Get-MetalFromFile -FilePath "$PSScriptRoot\Metal\metal.txt" | ForEach-Object {
+
+                        $totalVolume += $_.VOLUME
+                        $totalAmount += $_.PRICE * $_.VOLUME
+                    
+                        [PSCustomObject]@{
+                            METAL  = $_.METAL
+                            BUYER  = if ($_.BUYER -like "*Me*")
+                            {
+                                New-PodeWebIcon -Name "face-man" -Colour "#00FF00"
+                            }
+                            else
+                            {
+                                New-PodeWebIcon -Name "face-woman" -Colour "#FF0000"
+                            }
+                            DATE   = $_.DATE.ToString('dd.MM.yyyy')
+                            VOLUME = $_.VOLUME
+                            PRICE  = "$($_.PRICE) PLN"
+                            SUMA   = "$($_.PRICE * $_.VOLUME) PLN"
+                        }
+                    }
+
                 }
                 New-PodeWebText -Value "Tu będzie wykres"
                 New-PodeWebButton -Name "Więcej" -Url http://localhost:5000/groups/Fortune/pages/Gold
