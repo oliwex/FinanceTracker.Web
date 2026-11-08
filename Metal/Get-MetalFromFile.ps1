@@ -18,11 +18,16 @@ function Get-MetalFromFile
         }
         else
         {
+            $parts=$line.Split(":")
             [PSCustomObject]@{
-                METAL  = $groupName
-                AMOUNT = $line.Split(":")[0]
-                TYPE   = $line.Split(":")[1]
+                METAL  = [String]$($groupName)
+                BUYER = [String]$($parts[0])
+                DATE   = [datetime]::ParseExact($($parts[1]),"dd.MM.yyyy",$null)
+                VOLUME   = [int]$($parts[2])
+                PRICE   = [decimal]$($parts[3])
             }
         }
     }
 }
+
+Get-MetalFromFile -FilePath "E:\GIT\FinanceTracker.Web\Metal\metal.txt"
