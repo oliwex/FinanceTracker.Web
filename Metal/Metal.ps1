@@ -66,7 +66,11 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                 Sync-PodeWebTable -Name "GoldTable"
             }
         )
-#TODO:Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
+#TODO: Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
+#TODO: Wyczyszczenie kodu
+#TODO: Zastanowić się nad przełączeniem tego na bazę danych
+
+
 <#
         Sztabki
         -Ile ma mama ile mam ja
