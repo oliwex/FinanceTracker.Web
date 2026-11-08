@@ -38,7 +38,6 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
             
             $table
         } -SimpleFilter -SimpleSort
-
         New-PodeWebButton -Name 'Dodaj sztabkę' -ScriptBlock {
             Show-PodeWebModal -Name 'AddGoldModal'
         }
@@ -46,30 +45,28 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         New-PodeWebModal -Name 'AddGoldModal' -Content @(
             New-PodeWebForm -Name 'AddGoldForm' -SubmitText 'Zapisz' -Content @(
                 #IDEA:Domyślnie zakładamy, że jest to złoto
-                New-PodeWebTextbox -Name "Buyer" -DisplayName 'Kupujący' -Type Text -HelpText 'Me albo Mama'
+                New-PodeWebSelect -Name "Buyer" -DisplayName "Kupujący" -Options @("Me","Mama")
                 New-PodeWebDateTime -Name "Date" -DisplayName 'Data zakupu' -Type Date -HelpText "Czas zakupu sztabki"
                 New-PodeWebTextbox -Name "Volume" -DisplayName 'Ilość' -Type Number -HelpText "Ilość zakupionych sztabek"
                 New-PodeWebTextbox -Name "Price" -DisplayName 'Cena' -Type Number -HelpText "Cena sztabek"
 
             ) -ScriptBlock {
-        
-                $json = $WebEvent.Data["Date_Date"] | ConvertTo-Json
-
-                Show-PodeWebToast -Message $json
             
                 $line = @(
                     $WebEvent.Data["Buyer"]
-                    $WebEvent.Data["Date_Date"]
+                    ([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")
                     $WebEvent.Data["Volume"]
                     $WebEvent.Data["Price"]
                 ) -join ':'
-            
-                Add-Content -Path "E:\GIT\FinanceTracker.Web\Metal\metal.txt" -Value $line
+
+                Show-PodeWebToast -Message "Sztabki dodano: `nKupujący: $($WebEvent.Data["Buyer"]) `nData: $(([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")) `nLiczba: $($WebEvent.Data["Volume"]) `nCena: $($WebEvent.Data["Price"])"
+
+                Add-Content -Path "$PSSCriptRoot\metal.txt" -Value "`n$line"
             
                 Sync-PodeWebTable -Name "GoldTable"
             }
         )
-#Problemy:Data się nie zapisuje, Dane zapisują się tam, gdzie ostatnio stał kursor w pliku metal
+#TODO:Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
 <#
         Sztabki
         -Ile ma mama ile mam ja
@@ -88,6 +85,5 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         Dynamiczne ceny złota pobierane z API
     
     #>
-
 ) -Icon "gold" -DisplayName "Złoto"
 }
