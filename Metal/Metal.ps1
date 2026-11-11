@@ -8,6 +8,8 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
 
             $table=Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT * FROM GOLD" | ForEach-Object {
                 
+                $id=$_.ID #IDEA:DO usuwania obiektu
+
                 $totalVolume += $_.VOLUME
                 $totalAmount += $_.PRICE * $_.VOLUME
 
@@ -25,6 +27,12 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                     VOLUME = $_.VOLUME
                     PRICE  = "$($_.PRICE) PLN"
                     SUM   = "$($_.PRICE * $_.VOLUME) PLN"
+                    DELETE = New-PodeWebButton -Name 'Delete ' -DataValue $id  -ScriptBlock {
+
+                        Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "DELETE FROM GOLD WHERE ID = $($WebEvent.Data["Value"])"
+                        Show-PodeWebToast -Message "This came from a button, with a data value of $($WebEvent.Data["Value"])!"
+                        Sync-PodeWebTable -Name "GoldTable"
+                    }
                 }
             }
 
@@ -35,6 +43,7 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                 VOLUME = $totalVolume
                 PRICE  = ''
                 SUM   = "$totalAmount PLN"
+                DELETE = ''
             }
                     
             $table

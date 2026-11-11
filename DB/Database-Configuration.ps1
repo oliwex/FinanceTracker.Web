@@ -45,3 +45,5 @@ Invoke-SqliteQuery -DataSource $dbPath -Query $query
 #ENDREGION RECORDS
 
 Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT * FROM GOLD"
+
+Invoke-SqliteQuery -DataSource $dbPath -Query "DELETE FROM GOLD WHERE ID = 16"
