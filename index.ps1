@@ -16,7 +16,7 @@ Start-PodeServer {
     
     Use-PodeWebTemplates -Title 'Finance Tracker' -Theme Light
 
-    Add-PodeWebPage -Name 'Sprawozdanie finansowe' -ScriptBlock {
+    Add-PodeWebPage -Name 'Financial Statement' -ScriptBlock {
         New-PodeWebGrid -Cells @(
             New-PodeWebCell -Content @(
                 New-PodeWebTable -Name "GoldTable" -ScriptBlock {
@@ -35,13 +35,13 @@ Start-PodeServer {
                             DATE   = $_.DATE.ToString('dd.MM.yyyy')
                             VOLUME = $_.VOLUME
                             PRICE  = "$($_.PRICE) PLN"
-                            SUMA   = "$($_.PRICE * $_.VOLUME) PLN"
+                            SUM   = "$($_.PRICE * $_.VOLUME) PLN"
                         }
                     }
 
                 }
                 New-PodeWebText -Value "Tu będzie wykres"
-                New-PodeWebButton -Name "Więcej" -Url http://localhost:5000/groups/Fortune/pages/Gold
+                New-PodeWebButton -Name "More" -Url http://localhost:5000/groups/Fortune/pages/Gold
             )
             New-PodeWebCell -Content @(
                 New-PodeWebTable -Name 'MoneyTable' -ScriptBlock {

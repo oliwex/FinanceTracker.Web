@@ -1,5 +1,5 @@
 Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
-    New-PodeWebCard -Content @(
+    New-PodeWebCard -Icon "gold" -DisplayName "Gold" -Content @(
 
         New-PodeWebTable -Name "GoldTable" -ScriptBlock {
 
@@ -24,7 +24,7 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                     DATE   = $_.DATE.ToString('dd.MM.yyyy')
                     VOLUME = $_.VOLUME
                     PRICE  = "$($_.PRICE) PLN"
-                    SUMA   = "$($_.PRICE * $_.VOLUME) PLN"
+                    SUM   = "$($_.PRICE * $_.VOLUME) PLN"
                 }
             }
 
@@ -34,44 +34,38 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                 DATE   = ''
                 VOLUME = $totalVolume
                 PRICE  = ''
-                SUMA   = "$totalAmount PLN"
+                SUM   = "$totalAmount PLN"
             }
                     
             $table
 
         } -SimpleFilter -SimpleSort
-        <#
-        New-PodeWebButton -Name 'Dodaj sztabkę' -ScriptBlock {
+        
+        New-PodeWebButton -Name 'Add' -ScriptBlock {
             Show-PodeWebModal -Name 'AddGoldModal'
         }
-        
-        New-PodeWebModal -Name 'AddGoldModal' -Content @(
-            New-PodeWebForm -Name 'AddGoldForm' -SubmitText 'Zapisz' -Content @(
+            New-PodeWebModal -Name 'AddGoldModal' -Content @(
+            New-PodeWebForm -Name 'AddGoldForm' -SubmitText 'Save' -Content @(
                 #IDEA:Domyślnie zakładamy, że jest to złoto
-                New-PodeWebSelect -Name "Buyer" -DisplayName "Kupujący" -Options @("Me","Mama")
-                New-PodeWebDateTime -Name "Date" -DisplayName 'Data zakupu' -Type Date -HelpText "Czas zakupu sztabki"
-                New-PodeWebTextbox -Name "Volume" -DisplayName 'Ilość' -Type Number -HelpText "Ilość zakupionych sztabek"
-                New-PodeWebTextbox -Name "Price" -DisplayName 'Cena' -Type Number -HelpText "Cena sztabek"
+                New-PodeWebSelect -Name "Buyer" -DisplayName "Buyer" -Options @("Ja","Mama")
+                New-PodeWebDateTime -Name "Date" -DisplayName 'Buy Date' -Type Date -HelpText "Czas zakupu sztabki"
+                New-PodeWebTextbox -Name "Volume" -DisplayName 'Volume' -Type Number -HelpText "Ilość zakupionych sztabek"
+                New-PodeWebTextbox -Name "Price" -DisplayName 'Price' -Type Number -HelpText "Cena sztabek"
 
             ) -ScriptBlock {
             
-                $line = @(
-                    $WebEvent.Data["Buyer"]
-                    ([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")
-                    $WebEvent.Data["Volume"]
-                    $WebEvent.Data["Price"]
-                ) -join ':'
+                $query = "INSERT INTO GOLD (METAL, BUYER, DATE, VOLUME, PRICE) VALUES ('GOLD','$($WebEvent.Data["Buyer"])','$($WebEvent.Data["Date_Date"])','$($WebEvent.Data["Volume"])','$($WebEvent.Data["Price"])')"
 
-                Show-PodeWebToast -Message "Sztabki dodano: `nKupujący: $($WebEvent.Data["Buyer"]) `nData: $(([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")) `nLiczba: $($WebEvent.Data["Volume"]) `nCena: $($WebEvent.Data["Price"])"
+                Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query $query
+                
+                Show-PodeWebToast -Message "`nBuyer: $($WebEvent.Data["Buyer"]) `nDate: $(([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")) `nVolume: $($WebEvent.Data["Volume"]) `nPrice: $($WebEvent.Data["Price"])"
 
-                Add-Content -Path "$PSSCriptRoot\metal.txt" -Value "`n$line"
-            
                 Sync-PodeWebTable -Name "GoldTable"
             }
-        
-        
         )
-        #>
+            
+        
+        
         
 #TODO: Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
 #TODO: Wyczyszczenie kodu
@@ -96,5 +90,5 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         Dynamiczne ceny złota pobierane z API
     
     #>
-) -Icon "gold" -DisplayName "Złoto"
+)
 }
