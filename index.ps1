@@ -1,10 +1,13 @@
+#REGION CONFIGURATION
 Import-Module Pode.Web
+Import-Module PSSQLite
+
+#ENDREGION CONFIGURATION
 
 Start-PodeServer {
     
     #region EXTERNAL
     #FUNCTIONS
-    Use-PodeScript -Path "$PSScriptRoot\Metal\Get-MetalFromFile.ps1"
     Use-PodeScript -Path "$PSScriptRoot\Cash\Get-MoneyFromFile.ps1"
     
     #endregion EXTERNAL
@@ -17,15 +20,11 @@ Start-PodeServer {
         New-PodeWebGrid -Cells @(
             New-PodeWebCell -Content @(
                 New-PodeWebTable -Name "GoldTable" -ScriptBlock {
-
-                    Get-MetalFromFile -FilePath "$PSScriptRoot\Metal\metal.txt" | ForEach-Object {
-
-                        $totalVolume += $_.VOLUME
-                        $totalAmount += $_.PRICE * $_.VOLUME
-                    
+                    $dbPath = "$PSScriptRoot\DB\fortune.db"
+                    Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT * FROM GOLD" | ForEach-Object {
                         [PSCustomObject]@{
                             METAL  = $_.METAL
-                            BUYER  = if ($_.BUYER -like "*Me*")
+                            BUYER  = if ($_.BUYER -like "*Ja*")
                             {
                                 New-PodeWebIcon -Name "face-man" -Colour "#00FF00"
                             }
