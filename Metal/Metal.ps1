@@ -3,15 +3,9 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
 
         New-PodeWebTable -Name "GoldTable" -ScriptBlock {
 
-            $totalVolume = 0
-            $totalAmount = 0
-
             $table=Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT * FROM GOLD" | ForEach-Object {
                 
                 $id=$_.ID #IDEA:DO usuwania obiektu
-
-                $totalVolume += $_.VOLUME
-                $totalAmount += $_.PRICE * $_.VOLUME
 
                 [PSCustomObject]@{
                     METAL  = $_.METAL
@@ -27,22 +21,22 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                     VOLUME = $_.VOLUME
                     PRICE  = "$($_.PRICE) PLN"
                     SUM   = "$($_.PRICE * $_.VOLUME) PLN"
-                    DELETE = New-PodeWebButton -Name 'Delete ' -DataValue $id  -ScriptBlock {
+                    DELETE = New-PodeWebButton -Name 'Delete ' -DataValue $id -Icon 'delete' -ScriptBlock {
 
                         Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "DELETE FROM GOLD WHERE ID = $($WebEvent.Data["Value"])"
-                        Show-PodeWebToast -Message "This came from a button, with a data value of $($WebEvent.Data["Value"])!"
+                        Show-PodeWebToast -Message "Usunięto!"
                         Sync-PodeWebTable -Name "GoldTable"
                     }
                 }
             }
-
+            Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT SUM(VOLUME) FROM GOLD"
             $table += [PSCustomObject]@{
                 METAL  = 'RAZEM'
                 BUYER  = ''
                 DATE   = ''
-                VOLUME = $totalVolume
+                VOLUME = $(Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT SUM(VOLUME) FROM GOLD")
                 PRICE  = ''
-                SUM   = "$totalAmount PLN"
+                SUM   = "$(Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT SUM(PRICE*VOLUME) FROM GOLD") PLN"
                 DELETE = ''
             }
                     
@@ -53,32 +47,16 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         New-PodeWebButton -Name 'Add' -ScriptBlock {
             Show-PodeWebModal -Name 'AddGoldModal'
         }
-            New-PodeWebModal -Name 'AddGoldModal' -Content @(
-            New-PodeWebForm -Name 'AddGoldForm' -SubmitText 'Save' -Content @(
-                #IDEA:Domyślnie zakładamy, że jest to złoto
-                New-PodeWebSelect -Name "Buyer" -DisplayName "Buyer" -Options @("Ja","Mama")
-                New-PodeWebDateTime -Name "Date" -DisplayName 'Buy Date' -Type Date -HelpText "Czas zakupu sztabki"
-                New-PodeWebTextbox -Name "Volume" -DisplayName 'Volume' -Type Number -HelpText "Ilość zakupionych sztabek"
-                New-PodeWebTextbox -Name "Price" -DisplayName 'Price' -Type Number -HelpText "Cena sztabek"
 
-            ) -ScriptBlock {
-            
-                $query = "INSERT INTO GOLD (METAL, BUYER, DATE, VOLUME, PRICE) VALUES ('GOLD','$($WebEvent.Data["Buyer"])','$($WebEvent.Data["Date_Date"])','$($WebEvent.Data["Volume"])','$($WebEvent.Data["Price"])')"
-
-                Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query $query
-                
-                Show-PodeWebToast -Message "`nBuyer: $($WebEvent.Data["Buyer"]) `nDate: $(([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")) `nVolume: $($WebEvent.Data["Volume"]) `nPrice: $($WebEvent.Data["Price"])"
-
-                Sync-PodeWebTable -Name "GoldTable"
-            }
-        )
+        Use-PodeWebPages -Path "$PSScriptRoot\AddGoldModal.ps1" #IDEA:Modal do dodawania sztabek do bazy
             
         
         
-        
-#TODO: Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
 #TODO: Wyczyszczenie kodu
-#TODO: Zastanowić się nad przełączeniem tego na bazę danych
+#TODO: Przy kasowaniu danych zrobić okienko modalne z potwierdzeniem tak lub nie        
+#TODO: Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
+
+
 
 
 <#

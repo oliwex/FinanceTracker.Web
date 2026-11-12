@@ -46,4 +46,4 @@ Invoke-SqliteQuery -DataSource $dbPath -Query $query
 
 Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT * FROM GOLD"
 
-Invoke-SqliteQuery -DataSource $dbPath -Query "DELETE FROM GOLD WHERE ID = 16"
+Invoke-SqliteQuery -DataSource $dbPath -Query "DELETE FROM GOLD WHERE ID = 18"
