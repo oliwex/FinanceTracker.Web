@@ -1,18 +1,15 @@
 Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
-    New-PodeWebCard -Content @(
+    New-PodeWebCard -Icon "gold" -DisplayName "Gold" -Content @(
 
         New-PodeWebTable -Name "GoldTable" -ScriptBlock {
-            
-            $totalVolume = 0
-            $totalAmount = 0
-            $table = Get-MetalFromFile -FilePath "$PSSCriptRoot\metal.txt" | ForEach-Object {
 
-                $totalVolume += $_.VOLUME
-                $totalAmount += $_.PRICE * $_.VOLUME
-            
+            $table=Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT * FROM GOLD" | ForEach-Object {
+                
+                $id=$_.ID #IDEA:DO usuwania obiektu
+
                 [PSCustomObject]@{
                     METAL  = $_.METAL
-                    BUYER  = if ($_.BUYER -like "*Me*")
+                    BUYER  = if ($_.BUYER -like "*Ja*")
                     {
                         New-PodeWebIcon -Name "face-man" -Colour "#00FF00"
                     }
@@ -23,52 +20,42 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                     DATE   = $_.DATE.ToString('dd.MM.yyyy')
                     VOLUME = $_.VOLUME
                     PRICE  = "$($_.PRICE) PLN"
-                    SUMA   = "$($_.PRICE * $_.VOLUME) PLN"
+                    SUM   = "$($_.PRICE * $_.VOLUME) PLN"
+                    DELETE = New-PodeWebButton -Name 'Delete ' -DataValue $id -Icon 'delete' -ScriptBlock {
+
+                        Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "DELETE FROM GOLD WHERE ID = $($WebEvent.Data["Value"])"
+                        Show-PodeWebToast -Message "Usunięto!"
+                        Sync-PodeWebTable -Name "GoldTable"
+                    }
                 }
             }
-            
+
             $table += [PSCustomObject]@{
                 METAL  = 'RAZEM'
                 BUYER  = ''
                 DATE   = ''
-                VOLUME = $totalVolume
+                VOLUME = $(Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT SUM(VOLUME) AS SUM_VOLUME FROM GOLD" -As SingleValue)
                 PRICE  = ''
-                SUMA   = "$totalAmount PLN"
+                SUM   = "$(Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT SUM(PRICE*VOLUME) FROM GOLD" -As SingleValue) PLN"
+                DELETE = ''
             }
-            
+                    
             $table
+
         } -SimpleFilter -SimpleSort
-        New-PodeWebButton -Name 'Dodaj sztabkę' -ScriptBlock {
+        
+        New-PodeWebButton -Name 'Add' -ScriptBlock {
             Show-PodeWebModal -Name 'AddGoldModal'
         }
+
+        Use-PodeWebPages -Path "$PSScriptRoot\AddGoldModal.ps1" #IDEA:Modal do dodawania sztabek do bazy
+    
         
-        New-PodeWebModal -Name 'AddGoldModal' -Content @(
-            New-PodeWebForm -Name 'AddGoldForm' -SubmitText 'Zapisz' -Content @(
-                #IDEA:Domyślnie zakładamy, że jest to złoto
-                New-PodeWebSelect -Name "Buyer" -DisplayName "Kupujący" -Options @("Me","Mama")
-                New-PodeWebDateTime -Name "Date" -DisplayName 'Data zakupu' -Type Date -HelpText "Czas zakupu sztabki"
-                New-PodeWebTextbox -Name "Volume" -DisplayName 'Ilość' -Type Number -HelpText "Ilość zakupionych sztabek"
-                New-PodeWebTextbox -Name "Price" -DisplayName 'Cena' -Type Number -HelpText "Cena sztabek"
-
-            ) -ScriptBlock {
-            
-                $line = @(
-                    $WebEvent.Data["Buyer"]
-                    ([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")
-                    $WebEvent.Data["Volume"]
-                    $WebEvent.Data["Price"]
-                ) -join ':'
-
-                Show-PodeWebToast -Message "Sztabki dodano: `nKupujący: $($WebEvent.Data["Buyer"]) `nData: $(([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")) `nLiczba: $($WebEvent.Data["Volume"]) `nCena: $($WebEvent.Data["Price"])"
-
-                Add-Content -Path "$PSSCriptRoot\metal.txt" -Value "`n$line"
-            
-                Sync-PodeWebTable -Name "GoldTable"
-            }
-        )
-#TODO: Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
 #TODO: Wyczyszczenie kodu
-#TODO: Zastanowić się nad przełączeniem tego na bazę danych
+#TODO: Przy kasowaniu danych zrobić okienko modalne z potwierdzeniem tak lub nie        
+#TODO: Dodanie formularza modalnego w którym będzie krok pośredni z potwierdzeniem, że dodajemy daną sztabkę.
+
+
 
 
 <#
@@ -89,5 +76,5 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         Dynamiczne ceny złota pobierane z API
     
     #>
-) -Icon "gold" -DisplayName "Złoto"
+)
 }
