@@ -29,14 +29,14 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
                     }
                 }
             }
-            Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT SUM(VOLUME) FROM GOLD"
+
             $table += [PSCustomObject]@{
                 METAL  = 'RAZEM'
                 BUYER  = ''
                 DATE   = ''
-                VOLUME = $(Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT SUM(VOLUME) FROM GOLD")
+                VOLUME = $(Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT SUM(VOLUME) AS SUM_VOLUME FROM GOLD" -As SingleValue)
                 PRICE  = ''
-                SUM   = "$(Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT SUM(PRICE*VOLUME) FROM GOLD") PLN"
+                SUM   = "$(Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT SUM(PRICE*VOLUME) FROM GOLD" -As SingleValue) PLN"
                 DELETE = ''
             }
                     
@@ -49,8 +49,7 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         }
 
         Use-PodeWebPages -Path "$PSScriptRoot\AddGoldModal.ps1" #IDEA:Modal do dodawania sztabek do bazy
-            
-        
+    
         
 #TODO: Wyczyszczenie kodu
 #TODO: Przy kasowaniu danych zrobić okienko modalne z potwierdzeniem tak lub nie        

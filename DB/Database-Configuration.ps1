@@ -44,6 +44,7 @@ Invoke-SqliteQuery -DataSource $dbPath -Query $query
 
 #ENDREGION RECORDS
 
-Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT * FROM GOLD"
+Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER"
 
-Invoke-SqliteQuery -DataSource $dbPath -Query "DELETE FROM GOLD WHERE ID = 18"
+New-PodeWebText -Value "Podział ile sztabek ma mama ile mam ja"
+Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" | Out-PodeWebTable -SimpleFilter -SimpleSort
