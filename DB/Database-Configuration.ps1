@@ -43,8 +43,10 @@ VALUES
 Invoke-SqliteQuery -DataSource $dbPath -Query $query
 
 #ENDREGION RECORDS
+$dbPath = "E:\GIT\FinanceTracker.Web\DB\fortune.db"
+Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" | Select-Object BUYER,@{Name="BARS";Expression={$_."SUM(VOLUME)"}} | Format-List *
 
-Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER"
+
 
 New-PodeWebText -Value "Podział ile sztabek ma mama ile mam ja"
-Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" | Out-PodeWebTable -SimpleFilter -SimpleSort
+Invoke-SqliteQuery -DataSource $dbPath -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" | Select-Object BUYER,@{Name="BARS";Expression={$_."SUM(VOLUME)"}}
