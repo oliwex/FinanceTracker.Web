@@ -15,5 +15,8 @@ New-PodeWebModal -Name 'AddGoldModal' -Content @(
         Show-PodeWebToast -Message "`nBuyer: $($WebEvent.Data["Buyer"]) `nDate: $(([datetime]$WebEvent.Data["Date_Date"]).ToString("dd.MM.yyyy")) `nVolume: $($WebEvent.Data["Volume"]) `nPrice: $($WebEvent.Data["Price"])"
 
         Sync-PodeWebTable -Name "GoldTable"
+        Sync-PodeWebTable -Name "MamaJaGold"
+        Sync-PodeWebChart -Name "MamaJaSumBarsChart"
+        Sync-PodeWebChart -Name "MamaJaAllBarsChart"
     }
 )

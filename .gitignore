@@ -1,1 +1,2 @@
-*.txt
+*.db
+DB/Database-Configuration.ps1
