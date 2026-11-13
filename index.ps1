@@ -51,7 +51,20 @@ Start-PodeServer {
                 New-PodeWebButton -Name "Więcej" -Url http://localhost:5000/groups/Fortune/pages/Cash
             )
         )
+
+        
+
+        New-PodeWebButton -Name "More" -ScriptBlock { 
+            $price=(Invoke-RestMethod -Uri "https://www.goldapi.io/api/XAU/PLN" -Headers @{
+                "x-access-token" = "goldapi-7e15a177b8759529f98f464b67e7017d-io"
+                "Content-Type"   = "application/json"
+            } -Method GET ).PRICE
+            Show-PodeWebToast -Message $price
+        }
+
+
     }
+
 
     Use-PodeWebPages -Path "$PSScriptRoot\Metal\Metal.ps1"
     Use-PodeWebPages -Path "$PSScriptRoot\Cash\Cash.ps1"
