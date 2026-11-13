@@ -1,7 +1,7 @@
 Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
     New-PodeWebCard -Icon "gold" -DisplayName "Gold" -Content @(
 
-        New-PodeWebTable -Name "GoldTable" -ScriptBlock {
+        New-PodeWebTable -Name "GoldTable" -DisplayName "Gold Table" -ScriptBlock {
 
             $table=Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT * FROM GOLD" | ForEach-Object {
                 
@@ -51,37 +51,51 @@ Add-PodeWebPage -Name "Gold" -Icon "mdi-gold" -Group "Fortune" -ScriptBlock {
         Use-PodeWebPages -Path "$PSScriptRoot\AddGoldModal.ps1" #IDEA:Modal do dodawania sztabek do bazy
     
 
-        New-PodeWebText -Value "Mama vs Ja"
-        New-PodeWebTable -Name "MamaJaTMP" -ScriptBlock {
-            Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" | ForEach-Object {
-                [PSCustomObject]@{
-                    BUYER = if ($_.BUYER -like "*Ja*")
-                    {
-                        New-PodeWebIcon -Name "face-man" -Colour "#00FF00"
+
+        New-PodeWebAccordion -Bellows @(
+            New-PodeWebBellow -Name Bellow1 -DisplayName "GOLD Comparison" -Content @(
+                New-PodeWebTable -Name "MamaJaTMP" -DisplayName "GOLD Comparison" -ScriptBlock {
+                    Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" | ForEach-Object {
+                        [PSCustomObject]@{
+                            BUYER = if ($_.BUYER -like "*Ja*")
+                            {
+                                New-PodeWebIcon -Name "face-man" -Colour "#00FF00"
+                            }
+                            else
+                            {
+                                New-PodeWebIcon -Name "face-woman" -Colour "#FF0000"
+                            }
+                            SUM_BAR = $($_."SUM(VOLUME)")
+                            MIN_PRICE = "$($_."MIN(PRICE)") PLN"
+                            MAX_PRICE = "$($_."MAX(PRICE)") PLN"
+                            SUM_PRICE = "$($_."SUM(PRICE*VOLUME)") PLN"
+                        }
                     }
-                    else
-                    {
-                        New-PodeWebIcon -Name "face-woman" -Colour "#FF0000"
-                    }
-                    SUM_BAR = $($_."SUM(VOLUME)")
-                    MIN_PRICE = "$($_."MIN(PRICE)") PLN"
-                    MAX_PRICE = "$($_."MAX(PRICE)") PLN"
-                    SUM_PRICE = "$($_."SUM(PRICE*VOLUME)") PLN"
                 }
-            }
-        }
-
-        $table=Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" -As PSObject
+                $table=Invoke-SqliteQuery -DataSource "$PSScriptRoot\..\DB\fortune.db" -Query "SELECT BUYER,SUM(VOLUME),MIN(PRICE),MAX(PRICE),SUM(PRICE*VOLUME) FROM GOLD GROUP BY BUYER" -As PSObject
         
-        New-PodeWebChart -Name "MamaJaTMPChart1" -Type bar -ArgumentList (,$table) -ScriptBlock {
-            param($table)
-            $table | Select-Object BUYER,@{Name="BARS";Expression={$_."SUM(VOLUME)"}} | ConvertTo-PodeWebChartData -LabelProperty BUYER -DatasetProperty BARS
-        }
+                New-PodeWebChart -Name "MamaJaTMPChart1" -Type bar -ArgumentList (,$table) -ScriptBlock {
+                    param($table)
+                    $table | Select-Object BUYER,@{Name="BARS";Expression={$_."SUM(VOLUME)"}} | ConvertTo-PodeWebChartData -LabelProperty BUYER -DatasetProperty BARS
+                }
+        
+                New-PodeWebChart -Name "MamaJaTMPChart2" -Type bar -ArgumentList (,$table)  -ScriptBlock {
+                    param($table)
+                    $table| Select-Object BUYER,@{Name="MIN";Expression={$_."MIN(PRICE)"}},@{Name="MAX";Expression={$_."MAX(PRICE)"}},@{Name="SUM";Expression={$_."SUM(PRICE*VOLUME)"}}| ConvertTo-PodeWebChartData -LabelProperty BUYER -DatasetProperty MIN,MAX,SUM
+                }
+            )
+        New-PodeWebBellow -Name Bellow2 -Content @(
+            New-PodeWebImage -Source '/pode.web-static/images/icon.png' -Alignment Center
+            )
+        New-PodeWebBellow -Name Bellow3 -Content @(
+            New-PodeWebImage -Source '/pode.web-static/images/icon.png' -Alignment Center
+            )
+        )
 
-        New-PodeWebChart -Name "MamaJaTMPChart2" -Type bar -ArgumentList (,$table)  -ScriptBlock {
-            param($table)
-            $table| Select-Object BUYER,@{Name="MIN";Expression={$_."MIN(PRICE)"}},@{Name="MAX";Expression={$_."MAX(PRICE)"}},@{Name="SUM";Expression={$_."SUM(PRICE*VOLUME)"}}| ConvertTo-PodeWebChartData -LabelProperty BUYER -DatasetProperty MIN,MAX,SUM
-        }
+        
+        
+
+
 
 
 #TODO: Wyczyszczenie kodu
